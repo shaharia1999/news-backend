@@ -1,4 +1,4 @@
-const visitCounts = {}; // In-memory count
+const visitCounts = {}; // In-memory count storage
 const visitorCounter = (req, res, next) => {
   const slug = req.params.slug; 
   if (visitCounts[slug]) {
