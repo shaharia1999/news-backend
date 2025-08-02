@@ -4,7 +4,7 @@ const cors = require("cors");
 const applyCommonMiddleware = (app) => {
   const allowedOrigins = [
     'http://localhost:3000',
-    'https://news-md-git-main-shaharia1999s-projects.vercel.app/'
+    'https://news-md.vercel.app/'
   ];
 
   app.use(express.json());
