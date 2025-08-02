@@ -86,7 +86,7 @@ exports.forgotPassword = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000; // expires in 1 hour
     await user.save();
 
-    const resetLink = `http://localhost:3000/reset-password/${token}`;
+    const resetLink = `https://news-admin-fr.vercel.app/reset-password/${token}`;
 
     // Configure email
     const transporter = nodemailer.createTransport({
