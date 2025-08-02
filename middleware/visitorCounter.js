@@ -1,6 +1,6 @@
 const visitCounts = {}; // In-memory count
 const visitorCounter = (req, res, next) => {
-  const slug = req.params.slug; // ✅ this matches the route parameter
+  const slug = req.params.slug; 
   if (visitCounts[slug]) {
     visitCounts[slug]++;
   } else {

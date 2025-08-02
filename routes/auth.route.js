@@ -21,7 +21,7 @@ router.delete(
 
 
 // Protected route example
-// router.get('/profile', authMiddleware, (req, res) => {
+// router.get('/profil  e', authMiddleware, (req, res) => {
 //   res.send({ message: 'This is a protected route', user: req.user });
 // });     
 
