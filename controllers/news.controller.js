@@ -80,11 +80,21 @@ exports.getAllNews = async (req, res) => {
       News.countDocuments(filter),
     ]);
 
+    // Attach visitor count to each news item
+    const newsWithVisitors = newsList.map(news => {
+      const categoryVisits = visitCounts[news.category] || {};
+      const visitCount = categoryVisits[news.slug] || 0;
+      return {
+        ...news.toObject(),
+        visitCount,
+      };
+    });
+
     res.json({
       total,
       page: pageNum,
       pages: Math.ceil(total / limitNum),
-      news: newsList,
+      news: newsWithVisitors,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
