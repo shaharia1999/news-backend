@@ -18,6 +18,7 @@ const newsSchema = new mongoose.Schema({
   category: { type: String, required: true },
   subCategory: { type: String }, // <-- Add this line // <-- Add this line
   mainImage: { type: String, required: true },
+  visitCount: { type: Number, default: 0 },
   images: [{ type: String }],
 }, { timestamps: true }); // This adds createdAt and updatedAt fieldsThis adds createdAt and updatedAt fields
 

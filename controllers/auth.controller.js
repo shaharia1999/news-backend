@@ -4,9 +4,6 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
-
-
-
 exports.register = async (req, res) => {
   try {
     const { email, password, role } = req.body; 

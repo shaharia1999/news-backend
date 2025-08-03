@@ -1,7 +1,6 @@
-const slugify = require('slugify');
+const slugify = require("slugify");
 const News = require("../models/news.model");
-const { visitCounts } = require('../middleware/visitorCounter');
-
+const { visitCounts } = require("../middleware/visitorCounter");
 
 // Create News
 exports.createNews = async (req, res) => {
@@ -9,14 +8,16 @@ exports.createNews = async (req, res) => {
     const { title, description, category, mainImage, images } = req.body;
 
     if (!title || !category || !mainImage) {
-      return res.status(400).json({ message: 'Required fields are missing.' });
+      return res.status(400).json({ message: "Required fields are missing." });
     }
 
     const slug = slugify(title, { lower: true, strict: true });
 
     const existing = await News.findOne({ slug });
     if (existing) {
-      return res.status(400).json({ message: 'A news article with this title already exists.' });
+      return res
+        .status(400)
+        .json({ message: "A news article with this title already exists." });
     }
 
     const news = new News({
@@ -31,7 +32,7 @@ exports.createNews = async (req, res) => {
     const saved = await news.save();
 
     res.status(201).json({
-      message: 'News created successfully.',
+      message: "News created successfully.",
       news: saved,
     });
   } catch (error) {
@@ -45,8 +46,8 @@ exports.getAllNews = async (req, res) => {
       category,
       createdAfter,
       createdBefore,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
+      sortBy = "createdAt",
+      sortOrder = "desc",
       page = 1,
       limit = 10,
     } = req.query;
@@ -55,8 +56,8 @@ exports.getAllNews = async (req, res) => {
 
     if (search) {
       filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -74,44 +75,36 @@ exports.getAllNews = async (req, res) => {
 
     const [newsList, total] = await Promise.all([
       News.find(filter)
-        .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
+        .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
         .skip(skip)
         .limit(limitNum),
       News.countDocuments(filter),
     ]);
 
-    // Attach visitor count to each news item
-    const newsWithVisitors = newsList.map(news => {
-      const categoryVisits = visitCounts[news.category] || {};
-      const visitCount = categoryVisits[news.slug] || 0;
-      return {
-        ...news.toObject(),
-        visitCount,
-      };
-    });
-
     res.json({
       total,
       page: pageNum,
       pages: Math.ceil(total / limitNum),
-      news: newsWithVisitors,
+      news: newsList,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 exports.getNewsBySlug = async (req, res) => {
   try {
     const slug = req.params.slug;
-    const news = await News.findOne({ slug });
-
+    const news = await News.findOneAndUpdate(
+      { slug },
+      { $inc: { visitCount: 1 } },
+      { new: true }
+    );
     if (!news) {
-      return res.status(404).json({ message: 'News not found' });
+      return res.status(404).json({ message: "News not found" });
     }
-
-    console.log(`Visit count for '${slug}': ${req.visitCount}`); // ✅ debug
-
-    res.status(200).json({ data: news, visitCount: req.visitCount });
+    console.log(`Visit count for '${slug}': ${news.visitCount}`);
+    res.status(200).json({ data: news, visitCount: news.visitCount });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -119,11 +112,10 @@ exports.getNewsBySlug = async (req, res) => {
 
 exports.updateNews = async (req, res) => {
   try {
-    const updated = await News.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const updated = await News.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updated) {
       return res.status(404).send({ message: "News not found" });
@@ -134,7 +126,6 @@ exports.updateNews = async (req, res) => {
     res.status(500).send({ message: err.message });
   }
 };
-
 
 exports.deleteNews = async (req, res) => {
   try {
@@ -149,28 +140,34 @@ exports.deleteNews = async (req, res) => {
     res.status(500).send({ message: err.message });
   }
 };
-// controllers/newsController.js
-// controllers/newsController.js
-
 
 exports.getTotalViewsPerCategory = async (req, res) => {
   try {
-    // Get all unique categories from the News collection
-    const categories = await News.distinct('category');
-    const result = {};
+    const result = await News.aggregate([
+      {
+        $group: {
+          _id: "$category",
+          totalViews: { $sum: "$visitCount" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          category: "$_id",
+          totalViews: 1,
+        },
+      },
+    ]);
 
-    categories.forEach(category => {
-      const slugs = visitCounts[category] || {};
-      const totalViews = Object.values(slugs).reduce((sum, count) => sum + count, 0);
-      result[category] = totalViews;
+  
+    const response = {};
+    result.forEach((item) => {
+      response[item.category] = item.totalViews;
     });
 
-    res.json(result); // e.g. { sport: 0, breaking: 0, politics: 0 }
+    res.json(response); // e.g. { sport: 123, breaking: 456 }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
-
-
 
