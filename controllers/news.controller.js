@@ -1,5 +1,7 @@
 const slugify = require('slugify');
 const News = require("../models/news.model");
+const { visitCounts } = require('../middleware/visitorCounter');
+
 
 // Create News
 exports.createNews = async (req, res) => {
@@ -137,3 +139,28 @@ exports.deleteNews = async (req, res) => {
     res.status(500).send({ message: err.message });
   }
 };
+// controllers/newsController.js
+// controllers/newsController.js
+
+
+exports.getTotalViewsPerCategory = async (req, res) => {
+  try {
+    // Get all unique categories from the News collection
+    const categories = await News.distinct('category');
+    const result = {};
+
+    categories.forEach(category => {
+      const slugs = visitCounts[category] || {};
+      const totalViews = Object.values(slugs).reduce((sum, count) => sum + count, 0);
+      result[category] = totalViews;
+    });
+
+    res.json(result); // e.g. { sport: 0, breaking: 0, politics: 0 }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+
