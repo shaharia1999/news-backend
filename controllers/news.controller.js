@@ -44,6 +44,7 @@ exports.getAllNews = async (req, res) => {
     const {
       search,
       category,
+      subCategory, // <-- ✅ Extract subCategory
       createdAfter,
       createdBefore,
       sortBy = "createdAt",
@@ -62,6 +63,8 @@ exports.getAllNews = async (req, res) => {
     }
 
     if (category) filter.category = category;
+
+    if (subCategory) filter.subCategory = subCategory; // <-- ✅ Add subCategory filter
 
     if (createdAfter || createdBefore) {
       filter.createdAt = {};
@@ -91,6 +94,7 @@ exports.getAllNews = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.getNewsBySlug = async (req, res) => {
   try {
