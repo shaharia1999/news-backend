@@ -5,7 +5,7 @@ const { visitCounts } = require("../middleware/visitorCounter");
 // Create News
 exports.createNews = async (req, res) => {
   try {
-    const { title, description, category, mainImage, images ,subCategory} = req.body;
+    const { title, description, category, mainImage, images ,subCategory,author,source} = req.body;
 
     if (!title || !category || !mainImage) {
       return res.status(400).json({ message: "Required fields are missing." });
@@ -28,6 +28,8 @@ exports.createNews = async (req, res) => {
       category,
       mainImage,
       images,
+      author, // Optional author name
+      source, // Optional source
     });
 
     const saved = await news.save();
