@@ -8,7 +8,7 @@ const verifyToken = require('../middleware/auth.middleware');
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password/:token', authController.resetPassword);
+router.post('/reset-password/:token',verifyToken, RoleCheck(['moderator', 'admin']), authController.resetPassword);
 router.patch('/:id/role', verifyToken, RoleCheck(['moderator', 'admin']), authController.updateUserRole);
 router.get('/users', verifyToken, RoleCheck(['moderator', 'admin']), authController.getAllUsers);
 router.delete(
